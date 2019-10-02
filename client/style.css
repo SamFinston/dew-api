@@ -19,3 +19,30 @@ html, body {
   font-size: 2em;
   text-align: center;
 }
+
+#grid {
+  width: 100%;
+}
+
+#banner, #right, #left {
+  border: 1px solid black;
+}
+
+#columns {
+  display: flex;
+  justify-content: space-around;
+}
+
+#banner {
+  width: 80%;
+  margin: auto;
+}
+
+#left {
+  width: 40%;
+  position: sticky;
+}
+
+#right {
+  width: 40%;
+}
