@@ -1,3 +1,8 @@
+const user = {
+  toDew: [],
+  calendar: {},
+};
+
 const users = {};
 
 // returns the specified status code and message/id in JSON format
@@ -7,13 +12,79 @@ const respondJSON = (request, response, status, object) => {
   response.end();
 };
 
-//Doesn't return content
+// Doesn't return content
 const respondJSONMeta = (request, response, status) => {
   response.writeHead(status, { 'Content-Type': 'application/json' });
   response.end();
 };
 
-//Creates a new user in the users object or updates it if it already exists
+const addDate = (request, response, body) => {
+  const responseJSON = {
+    message: 'Date required',
+  };
+
+  if (!body.date) {
+    responseJSON.id = 'missingParams';
+    return respondJSON(request, response, 400, responseJSON);
+  }
+
+  const date = `d${body.date}`;
+
+  if (user.calendar[date]) {
+    return respondJSONMeta(request, response, 200);
+  }
+  user.calendar[date] = {};
+  user.calendar[date].drops = [];
+
+  responseJSON.message = 'date added successfully';
+  return respondJSON(request, response, 201, responseJSON);
+};
+
+const addDrop = (request, response, body) => {
+  const responseJSON = {
+    message: 'Name and age are both required.',
+  };
+
+  if (!body.list || !body.task) {
+    responseJSON.id = 'missingParams';
+    return respondJSON(request, response, 400, responseJSON);
+  }
+
+  const drop = {
+    complete: false,
+    task: body.task,
+    droplets: [],
+  };
+
+  if (body.list === 'to-dew') {
+    // add to to-dew list's 'drops' array
+    user.toDew.push(drop);
+
+    responseJSON.message = 'dew drop added successfully to to-dew list';
+    return respondJSON(request, response, 201, responseJSON);
+  }
+
+  const date = body.list;
+  if (user.calendar[date]) {
+    // add to date's 'drops' array
+    user.calendar[date].drops.push(drop);
+
+    responseJSON.message = `dew drop added successfully to ${date}`;
+    return respondJSON(request, response, 201, responseJSON);
+  }
+
+  return respondJSONMeta(request, response, 400);
+};
+
+const getUserData = (request, response) => {
+  const responseJSON = {
+    user,
+  };
+
+  return respondJSON(request, response, 200, responseJSON);
+};
+
+// Creates a new user in the users object or updates it if it already exists
 const addUser = (request, response, body) => {
   const responseJSON = {
     message: 'Name and age are both required.',
@@ -50,7 +121,7 @@ const addUser = (request, response, body) => {
   return respondJSONMeta(request, response, responseCode); // 204
 };
 
-//Returns the users object
+// Returns the users object
 const getUsers = (request, response) => {
   const responseJSON = {
     users,
@@ -59,10 +130,10 @@ const getUsers = (request, response) => {
   return respondJSON(request, response, 200, responseJSON);
 };
 
-//Returns no content
+// Returns no content
 const getUsersMeta = (request, response) => respondJSONMeta(request, response, 200);
 
-//Returns the response as JSON
+// Returns the response as JSON
 const notFound = (request, response) => {
   const responseJSON = {
     message: 'The page you are looking for was not found!',
@@ -72,7 +143,7 @@ const notFound = (request, response) => {
   return respondJSON(request, response, 404, responseJSON);
 };
 
-//Returns no content
+// Returns no content
 const notFoundMeta = (request, response) => respondJSONMeta(request, response, 404);
 
 module.exports = {
@@ -81,4 +152,7 @@ module.exports = {
   getUsersMeta,
   notFound,
   notFoundMeta,
+  getUserData,
+  addDate,
+  addDrop,
 };

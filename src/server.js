@@ -45,6 +45,44 @@ const handlePost = (request, response, parsedUrl) => {
       jsonHandler.addUser(request, response, bodyParams);
     });
   }
+
+  if (parsedUrl.pathname === '/addDrop') {
+    const body = [];
+
+    request.on('error', () => {
+      response.statusCode = 400;
+      response.end();
+    });
+
+    request.on('data', (chunk) => {
+      body.push(chunk);
+    });
+
+    request.on('end', () => {
+      const bodyString = Buffer.concat(body).toString();
+      const bodyParams = query.parse(bodyString);
+      jsonHandler.addDrop(request, response, bodyParams);
+    });
+  }
+
+  if (parsedUrl.pathname === '/addDate') {
+    const body = [];
+
+    request.on('error', () => {
+      response.statusCode = 400;
+      response.end();
+    });
+
+    request.on('data', (chunk) => {
+      body.push(chunk);
+    });
+
+    request.on('end', () => {
+      const bodyString = Buffer.concat(body).toString();
+      const bodyParams = query.parse(bodyString);
+      jsonHandler.addDate(request, response, bodyParams);
+    });
+  }
 };
 
 // handles get and head requests
@@ -63,6 +101,9 @@ const handleOther = (request, response, parsedUrl) => {
     case '/notReal':
       if (request.method === 'GET') jsonHandler.notFound(request, response);
       else jsonHandler.notFoundMeta(request, response);
+      break;
+    case '/getUser':
+      jsonHandler.getUserData(request, response);
       break;
     default:
       jsonHandler.notFound(request, response);

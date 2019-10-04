@@ -8,19 +8,53 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
 
+    const addListItem = (list, task) => {
+      let listID = `#${list}`
+      let listElement = document.querySelector(listID);
+      listElement.innerHTML += `<li>${task}</li>`;
+    };
+
+    const clearList = (list) => {
+      let listID = `#${list}`
+      let listElement = document.querySelector(listID);
+      listElement.innerHTML += "";
+    };
+
+    const addDiv = (date) => {
+      let calendar = document.querySelector("#right");
+      calendar.innerHTML += `
+        <div class="dew-date">
+          <h1>${date}</h1>
+          <ul id="d${date}"></ul>
+        </div>`;
+
+        let listField = document.querySelector("#listField");
+        listField.innerHTML += `<option value='d${date}'>${date}</option>`;
+    };
+
+    const clearCalendar = () => {
+      let calendar = document.querySelector("#right");
+      calendar.innerHTML = "";
+    };
+
     //Parses JSON for HTML and the console
-    const parseJSON = (xhr, content) => {
+    const parseJSON = (xhr) => {
       if(xhr.response) {
         const obj = JSON.parse(xhr.response);
         console.dir(obj);
 
         if(obj.message) {
           //if POST request, print the message
-          content.innerHTML += `<p>${obj.message}</p>`;
+          console.log(obj.message);
         }
         else {
           //if GET request, print the users object
-          content.innerHTML += `<p>${xhr.response}</p>`;
+          //console.log(xhr.response);
+          clearList("to-dew-list");
+          const dewDrops = obj.user.toDew;
+          for(let drop in dewDrops) {
+            addListItem("to-dew-list", dewDrops[drop].task);
+          }
         }
       }
     };
@@ -31,22 +65,22 @@
         
       switch(xhr.status) {
         case 200:
-          content.innerHTML = '<b>Success</b>';
+          console.log('Success');
           break;
         case 201:
-          content.innerHTML = '<b>Success</b>';
+          console.log('Success');
           break;
         case 204:
-          content.innerHTML = '<b>Updated (No Content)</b>';
+          console.log('Updated (No Content)');
           break;
         case 400:
-          content.innerHTML = '<b>Bad Request</b>';
+          console.log('Bad Request');
           break;
         case 404:
-          content.innerHTML = '<b>Resource Not Found</b>';
+          console.log('Resource Not Found');
           break;
         default:
-          content.innerHTML = '<b>Not Implemented</b>';
+          console.log('Not Implemented');
           break;
       }
       
@@ -71,54 +105,66 @@
       return false;
     };
 
-    //Parses AddUser form
-    const processAddUser = (e, form) => {
-      const nameAction = nameForm.getAttribute('action');
-      const nameMethod = nameForm.getAttribute('method');
-
-      const nameField = nameForm.querySelector('#nameField');
-      const ageField = nameForm.querySelector('#ageField');
-
-      const formData = `name=${nameField.value}&age=${ageField.value}`;
-
-      sendPost(e, nameMethod, nameAction, formData);
-    };
-
-    //Parses GetUsers form and sends GET/HEAD request
-    const processGetUsers = (e, userForm) => {
-      const url = userForm.querySelector('#urlField').value;
-      
-      const method = userForm.querySelector('#methodSelect').value;
-      
+    const getUserData = (e) => {
       const xhr = new XMLHttpRequest();
       
-      xhr.open(method, url);
+      xhr.open("get", '/getUser');
 
       xhr.setRequestHeader('Accept', 'application/json');
 
-      if(method == 'get') {
-        xhr.onload = () => handleResponse(xhr, true);
-      } else {
-        xhr.onload = () => handleResponse(xhr, false);
-      }
+      xhr.onload = () => handleResponse(xhr, true);
       
       xhr.send();
-      
-      e.preventDefault();
+
+      if(e) e.preventDefault();
       
       return false;
     };
 
+    const addDewDrop = (e, form) => {
+      const listField = dropForm.querySelector('#listField');
+      const taskField = dropForm.querySelector('#taskField');
+
+      const formData = `list=${listField.value}&task=${taskField.value}`;
+
+      sendPost(e, "post", '/addDrop', formData);
+
+      const list = listField.value;
+      const task = taskField.value;
+      addListItem(list, task);
+    };
+
+    const addDewDate = (e, form, calendar) => {
+      const dateField = dateForm.querySelector('#dateField');
+
+      const formData = `date=${dateField.value}`;
+
+      sendPost(e, "post", '/addDate', formData);
+
+      const date = dateField.value;
+      if(date) {
+        addDiv(date);
+      }
+    };
+
     //Sets up DOM constants and events
     const init = () => {
-      const nameForm = document.querySelector('#nameForm');
-      const userForm = document.querySelector('#userForm');
-      
-      const addUser = (e) => processAddUser(e, nameForm);
-      const getUsers = (e) => processGetUsers(e, userForm);
-      
-      nameForm.addEventListener('submit', addUser);
-      userForm.addEventListener('submit', getUsers);
+      const toDewList = document.querySelector("#to-dew-list");
+      const calendar = document.querySelector("#right");
+
+      const dropForm = document.querySelector('#dropForm');
+      const dateForm = document.querySelector('#dateForm');
+      const dataForm = document.querySelector('#dataForm');
+
+      const addDropArrow = (e) => addDewDrop(e, dropForm);
+      const addDateArrow = (e) => addDewDate(e, dateForm, calendar);
+      const getUser = (e) => getUserData(e);
+
+      dropForm.addEventListener('submit', addDropArrow);
+      dateForm.addEventListener('submit', addDateArrow);
+      dataForm.addEventListener('submit', getUser);
+
+      getUser();
     };
 
     window.onload = init;
@@ -127,49 +173,51 @@
 
 <body>
 
-  <div id="grid">
+  <div id="banner">
 
-    <div id="banner">
+    <div id="proto-form">
 
-      <section id="top">
+      <form id="dateForm" action="" method="post">
+        <label for="date">date: </label>
+        <input id="dateField" type="date" name="date" />
+        <input type="submit" value="add dew date" />
+      </form>
 
-        <h3>POST Status Code Tests</h3>
-        <form id="nameForm" action="/addUser" method="post">
-          <label for="name">Name: </label>
-          <input id="nameField" type="text" name="name" />
-          <label for="age">Age: </label>
-          <input id="ageField" type="number" name="age" min="0" max="100" step="1" />
-          <input type="submit" value="Add User" />
-        </form>
-        <form id="userForm" action="/getUsers" method="get">
-          <select id='urlField'>
-            <option value='/getUsers'>/getUsers</option>
-            <option value='/notReal'>/notReal</option>
-          </select>
-          <select id="methodSelect">
-            <option value="get">GET</option>
-            <option value="head">HEAD</option>
-          </select>
-          <input type="submit" value="Get User" />
-        </form>
-      </section>
+      <form id="dropForm" action="" method="post">
+        <label for="list">list: </label>
+        <select id='listField' name="list">
+          <option value='to-dew'>to-dew</option>
+        </select>
+        <label for="task">task: </label>
+        <input id="taskField" type="text" name="task" />
+        <input type="submit" value="add dew drop" />
+      </form>
 
-      <section id="content">
-      </section>
+      <div id="content"></div>
+      <form id="dataForm">
+        <input type="submit" value="get user data" />
+      </form>
 
-    </div>
-
-    <div id="columns">
-      <div id="left">
-        
-      </div>
-
-      <div id="right">
-        <h1>RIGHT</h1>
-      </div>
     </div>
 
   </div>
+
+  <div id="columns">
+    <div id="left">
+      <div id="to-dew">
+        <h1>to-dew</h1>
+        <ul id="to-dew-list"></ul>
+      </div>
+    </div>
+
+    <div id="right">
+      <div class="dew-date">
+        <h1>dew dates</h1>
+      </div>
+    </div>
+  </div>
+
+
 
 </body>
 

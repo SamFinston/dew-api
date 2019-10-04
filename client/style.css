@@ -3,28 +3,24 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 0;
+  background-color: #81de76;
 }
 
-#top {
-  text-align: center;
-  margin: 0 auto;
-}
-
-#top h1 {
-  font-size: 2em;
-}
-
-#content {
-  margin-top: 100px;
-  font-size: 2em;
+#proto-form {
+  margin: auto;
+  padding: 100px;
   text-align: center;
 }
 
-#grid {
-  width: 100%;
+#dateForm {
+  margin-bottom: 30px;
 }
 
-#banner, #right, #left {
+#dataForm {
+  margin-top: 30px;
+}
+
+#to-dew, .dew-date {
   border: 1px solid black;
 }
 
@@ -34,15 +30,28 @@ html, body {
 }
 
 #banner {
-  width: 80%;
+  width: 100%;
   margin: auto;
+  background-color: #ccff8c;
 }
 
 #left {
-  width: 40%;
-  position: sticky;
+  width: 50%;
 }
 
 #right {
-  width: 40%;
+  width: 50%;
+  padding-bottom: 30px;
+}
+
+.dew-date, #to-dew {
+  width: 80%;
+  margin: auto;
+  margin-top: 30px;
+  background-color: #ccff8c;
+}
+
+#to-dew {
+  position: sticky;
+  top: 30px;
 }
