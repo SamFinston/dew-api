@@ -10,7 +10,6 @@ let q;
 
 // handles post requests
 const handlePost = (request, response, parsedUrl) => {
-
   const body = [];
 
   request.on('error', () => {
@@ -38,6 +37,8 @@ const handlePost = (request, response, parsedUrl) => {
         break;
       case '/addDate':
         jsonHandler.addDate(request, response, bodyParams);
+        break;
+      default:
         break;
     }
   });
