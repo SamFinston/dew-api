@@ -19,6 +19,7 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
+// Adds date to user's calendar array
 const addDate = (request, response, body) => {
   const responseJSON = {
     message: 'Date required',
@@ -41,6 +42,7 @@ const addDate = (request, response, body) => {
   return respondJSON(request, response, 201, responseJSON);
 };
 
+// Adds task to to-dew list or specified date
 const addDrop = (request, response, body) => {
   const responseJSON = {
     message: 'List and task are both required.',
@@ -77,6 +79,7 @@ const addDrop = (request, response, body) => {
   return respondJSONMeta(request, response, 400);
 };
 
+// Finds the index of a task in a given list
 const findDropIndex = (arr, prop, value) => {
   for (let j = 0; j < arr.length; j++) {
     if ((arr[j])[prop] === value) return j;
@@ -85,6 +88,7 @@ const findDropIndex = (arr, prop, value) => {
   return -1;
 };
 
+// Finds the given task and toggles its "complete" boolean
 const toggleDrop = (request, response, body) => {
   const responseJSON = {
     message: 'List and task are both required.',
@@ -117,11 +121,11 @@ const toggleDrop = (request, response, body) => {
   return respondJSONMeta(request, response, 400);
 };
 
+// Returns the entire user object
+// takes query parameter to check if the user asked for complete tasks
 const getUserData = (request, response, params) => {
-  // console.dir(params);
   if (params.filter && params.filter === 'complete') {
     user.showComplete = true;
-    // console.dir('showComplete');
   } else {
     user.showComplete = false;
   }

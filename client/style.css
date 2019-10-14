@@ -55,22 +55,15 @@ html, body {
   margin-bottom: 30px;
 }
 
-/* #calendar-header {
-  text-align: right;
-} */
-
-#calendarTitle {
-  
+label {
+  font-family: 'Varela Round', sans-serif;
 }
 
-#dateForm {
-  
-}
-
-#dateField, #dateButton, #dataButton, #completeButton {
+#dateField, #dateButton, #dataButton, #completeButton, #listField, #taskField, #dropButton {
   color: #4da842;
   border: 1px solid #4da842;
   background-color: #ccff8c;
+  font-family: 'Varela Round', sans-serif;
 }
 
 .fa-tint {

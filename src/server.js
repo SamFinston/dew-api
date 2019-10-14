@@ -4,31 +4,12 @@ const query = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
 const jsonHandler = require('./jsonResponses.js');
 
-const port = process.env.PORT || process.env.NODE_PORT || 3000;
+const port = process.env.PORT || process.env.NODE_PORT || 4000;
 
 let q;
 
 // handles post requests
 const handlePost = (request, response, parsedUrl) => {
-  if (parsedUrl.pathname === '/respond') {
-    const body = [];
-
-    request.on('error', () => {
-      response.statusCode = 400;
-      response.end();
-    });
-
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
-
-    request.on('end', () => {
-      const bodyString = Buffer.concat(body).toString();
-      const bodyParams = query.parse(bodyString);
-      jsonHandler.respond(request, response, bodyParams.page, query.parse(parsedUrl.query));
-    });
-  }
-
   if (parsedUrl.pathname === '/addUser') {
     const body = [];
 
@@ -140,7 +121,6 @@ const handleOther = (request, response, parsedUrl) => {
 // Parses url and directs request to get/post specific functions
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
-  // console.dir(parsedUrl);
 
   if (request.method === 'POST') {
     handlePost(request, response, parsedUrl);
