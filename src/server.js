@@ -10,81 +10,37 @@ let q;
 
 // handles post requests
 const handlePost = (request, response, parsedUrl) => {
-  if (parsedUrl.pathname === '/addUser') {
-    const body = [];
 
-    request.on('error', () => {
-      response.statusCode = 400;
-      response.end();
-    });
+  const body = [];
 
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
+  request.on('error', () => {
+    response.statusCode = 400;
+    response.end();
+  });
 
-    request.on('end', () => {
-      const bodyString = Buffer.concat(body).toString();
-      const bodyParams = query.parse(bodyString);
-      jsonHandler.addUser(request, response, bodyParams);
-    });
-  }
+  request.on('data', (chunk) => {
+    body.push(chunk);
+  });
 
-  if (parsedUrl.pathname === '/addDrop') {
-    const body = [];
+  request.on('end', () => {
+    const bodyString = Buffer.concat(body).toString();
+    const bodyParams = query.parse(bodyString);
 
-    request.on('error', () => {
-      response.statusCode = 400;
-      response.end();
-    });
-
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
-
-    request.on('end', () => {
-      const bodyString = Buffer.concat(body).toString();
-      const bodyParams = query.parse(bodyString);
-      jsonHandler.addDrop(request, response, bodyParams);
-    });
-  }
-
-  if (parsedUrl.pathname === '/toggleDrop') {
-    const body = [];
-
-    request.on('error', () => {
-      response.statusCode = 400;
-      response.end();
-    });
-
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
-
-    request.on('end', () => {
-      const bodyString = Buffer.concat(body).toString();
-      const bodyParams = query.parse(bodyString);
-      jsonHandler.toggleDrop(request, response, bodyParams);
-    });
-  }
-
-  if (parsedUrl.pathname === '/addDate') {
-    const body = [];
-
-    request.on('error', () => {
-      response.statusCode = 400;
-      response.end();
-    });
-
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
-
-    request.on('end', () => {
-      const bodyString = Buffer.concat(body).toString();
-      const bodyParams = query.parse(bodyString);
-      jsonHandler.addDate(request, response, bodyParams);
-    });
-  }
+    switch (parsedUrl.pathname) {
+      case '/addUser':
+        jsonHandler.addUser(request, response, bodyParams);
+        break;
+      case '/addDrop':
+        jsonHandler.addDrop(request, response, bodyParams);
+        break;
+      case '/toggleDrop':
+        jsonHandler.toggleDrop(request, response, bodyParams);
+        break;
+      case '/addDate':
+        jsonHandler.addDate(request, response, bodyParams);
+        break;
+    }
+  });
 };
 
 // handles get and head requests
