@@ -1,6 +1,7 @@
 const user = {
   toDew: [],
   calendar: {},
+  showComplete: false,
 };
 
 const users = {};
@@ -42,7 +43,7 @@ const addDate = (request, response, body) => {
 
 const addDrop = (request, response, body) => {
   const responseJSON = {
-    message: 'Name and age are both required.',
+    message: 'List and task are both required.',
   };
 
   if (!body.list || !body.task) {
@@ -56,7 +57,7 @@ const addDrop = (request, response, body) => {
     droplets: [],
   };
 
-  if (body.list === 'to-dew') {
+  if (body.list === 'to-dew' || body.list === 'to-dew-list') {
     // add to to-dew list's 'drops' array
     user.toDew.push(drop);
 
@@ -76,7 +77,55 @@ const addDrop = (request, response, body) => {
   return respondJSONMeta(request, response, 400);
 };
 
-const getUserData = (request, response) => {
+const findDropIndex = (arr, prop, value) => {
+  for (let j = 0; j < arr.length; j++) {
+    if ((arr[j])[prop] === value) return j;
+  }
+
+  return -1;
+};
+
+const toggleDrop = (request, response, body) => {
+  const responseJSON = {
+    message: 'List and task are both required.',
+  };
+
+  if (!body.list || !body.task) {
+    responseJSON.id = 'missingParams';
+    return respondJSON(request, response, 400, responseJSON);
+  }
+
+  if (body.list === 'to-dew' || body.list === 'to-dew-list') {
+    const index = findDropIndex(user.toDew, 'task', body.task);
+    if (index >= 0) {
+      user.toDew[index].complete = !user.toDew[index].complete;
+      responseJSON.message = 'dew drop successfully toggled';
+      return respondJSON(request, response, 201, responseJSON);
+    }
+  }
+
+  const date = body.list;
+  if (user.calendar[date]) {
+    const index = findDropIndex(user.calendar[date].drops, 'task', body.task);
+    if (index >= 0) {
+      user.calendar[date].drops[index].complete = !user.calendar[date].drops[index].complete;
+      responseJSON.message = 'dew drop successfully toggled';
+      return respondJSON(request, response, 201, responseJSON);
+    }
+  }
+
+  return respondJSONMeta(request, response, 400);
+};
+
+const getUserData = (request, response, params) => {
+  // console.dir(params);
+  if (params.filter && params.filter === 'complete') {
+    user.showComplete = true;
+    // console.dir('showComplete');
+  } else {
+    user.showComplete = false;
+  }
+
   const responseJSON = {
     user,
   };
@@ -155,4 +204,5 @@ module.exports = {
   getUserData,
   addDate,
   addDrop,
+  toggleDrop,
 };

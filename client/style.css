@@ -12,16 +12,14 @@ html, body {
   text-align: center;
 }
 
-#dateForm {
-  margin-bottom: 30px;
-}
-
-#dataForm {
+#dataForm, #completeForm {
   margin-top: 30px;
 }
 
 #to-dew, .dew-date {
-  border: 1px solid black;
+  /* border: 1px solid black; */
+  padding: 10px;
+  padding-top: 5px;
 }
 
 #columns {
@@ -31,7 +29,7 @@ html, body {
 
 #banner {
   width: 100%;
-  margin: auto;
+  /* margin: auto; */
   background-color: #ccff8c;
 }
 
@@ -54,4 +52,42 @@ html, body {
 #to-dew {
   position: sticky;
   top: 30px;
+  margin-bottom: 30px;
+}
+
+/* #calendar-header {
+  text-align: right;
+} */
+
+#calendarTitle {
+  
+}
+
+#dateForm {
+  
+}
+
+#dateField, #dateButton, #dataButton, #completeButton {
+  color: #4da842;
+  border: 1px solid #4da842;
+  background-color: #ccff8c;
+}
+
+.fa-tint {
+  color: rgb(123, 141, 241);
+  margin: 10px;
+}
+
+h1 {
+  font-family: 'Fredoka One', cursive;
+  color: rgb(123, 141, 241);
+}
+
+p {
+  font-family: 'Varela Round', sans-serif;
+  font-size: 24px;
+}
+
+#dataForm {
+  display: none;
 }

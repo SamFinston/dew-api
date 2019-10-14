@@ -6,6 +6,8 @@ const jsonHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
+let q;
+
 // handles post requests
 const handlePost = (request, response, parsedUrl) => {
   if (parsedUrl.pathname === '/respond') {
@@ -65,6 +67,25 @@ const handlePost = (request, response, parsedUrl) => {
     });
   }
 
+  if (parsedUrl.pathname === '/toggleDrop') {
+    const body = [];
+
+    request.on('error', () => {
+      response.statusCode = 400;
+      response.end();
+    });
+
+    request.on('data', (chunk) => {
+      body.push(chunk);
+    });
+
+    request.on('end', () => {
+      const bodyString = Buffer.concat(body).toString();
+      const bodyParams = query.parse(bodyString);
+      jsonHandler.toggleDrop(request, response, bodyParams);
+    });
+  }
+
   if (parsedUrl.pathname === '/addDate') {
     const body = [];
 
@@ -89,6 +110,7 @@ const handlePost = (request, response, parsedUrl) => {
 const handleOther = (request, response, parsedUrl) => {
   switch (parsedUrl.pathname) {
     case '/':
+      q = query.parse(parsedUrl.query);
       htmlHandler.getIndex(request, response);
       break;
     case '/style.css':
@@ -103,7 +125,11 @@ const handleOther = (request, response, parsedUrl) => {
       else jsonHandler.notFoundMeta(request, response);
       break;
     case '/getUser':
-      jsonHandler.getUserData(request, response);
+      if (parsedUrl.query) jsonHandler.getUserData(request, response, query.parse(parsedUrl.query));
+      else jsonHandler.getUserData(request, response, q);
+      break;
+    case '/logo':
+      htmlHandler.getLogo(request, response);
       break;
     default:
       jsonHandler.notFound(request, response);
@@ -114,6 +140,7 @@ const handleOther = (request, response, parsedUrl) => {
 // Parses url and directs request to get/post specific functions
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
+  // console.dir(parsedUrl);
 
   if (request.method === 'POST') {
     handlePost(request, response, parsedUrl);

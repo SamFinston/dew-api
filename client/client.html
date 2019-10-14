@@ -4,37 +4,91 @@
 <head>
   <title>Our simple HTTP server</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Fredoka+One|Varela+Round&display=swap" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
 
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    const crossOut = (e) => {
+      if(e.target.style.textDecoration == "line-through") e.target.style.textDecoration = "none";
+      else e.target.style.textDecoration = "line-through";
+
+      toggleDewDrop(e.target.parentNode.id.replace("dd", "d"), e.target.textContent);
+    };
+
     const addListItem = (list, task) => {
-      let listID = `#${list}`
+      let listID = `#${list}`;
       let listElement = document.querySelector(listID);
-      listElement.innerHTML += `<li>${task}</li>`;
+
+      let p = document.createElement("p");
+      p.innerHTML = `<i class="fa fa-tint fa-2x"></i>${task}`;
+      p.addEventListener('click', crossOut, false);
+      listElement.appendChild(p);
     };
 
     const clearList = (list) => {
-      let listID = `#${list}`
+      let listID = `#${list}`;
       let listElement = document.querySelector(listID);
-      listElement.innerHTML += "";
+      console.log(listElement);
+      while (listElement.firstChild) listElement.removeChild(listElement.firstChild);
+      listElement.innerHTML = "";
+      console.log(listElement);
+      //listElement.innerHTML = "";
     };
 
     const addDiv = (date) => {
-      let calendar = document.querySelector("#right");
+      let calendar = document.querySelector("#calendar");
+      console.log("this: " + date);
       calendar.innerHTML += `
         <div class="dew-date">
-          <h1>${date}</h1>
-          <ul id="d${date}"></ul>
+          <h1>${formatDate(date)}</h1>
+          <div id="d${date}"></div>
         </div>`;
 
         let listField = document.querySelector("#listField");
-        listField.innerHTML += `<option value='d${date}'>${date}</option>`;
+        listField.innerHTML += `<option value='d${date}'>${formatDate(date)}</option>`;
+        return document.querySelector(`#d${date}`);
     };
 
     const clearCalendar = () => {
-      let calendar = document.querySelector("#right");
+      let calendar = document.querySelector("#calendar");
       calendar.innerHTML = "";
+    };
+
+    const formatDate = (date) => {
+      let values = date.split('-');
+      return `${months[values[1] - 1]} ${values[2]}`;
+    };
+
+    const refreshPage = (obj) => {
+      //Populates the page with data from the server
+          
+          //Fills the to-dew list
+          clearList("to-dew-list");
+          const dewDrops = obj.user.toDew;
+          for(let drop in dewDrops) {
+            if((!obj.user.showComplete && !dewDrops[drop].complete) || (obj.user.showComplete && dewDrops[drop].complete)) {
+              addListItem("to-dew-list", dewDrops[drop].task);
+            }
+          }
+
+          //fills the calendar
+          clearCalendar();
+          const dewDates = obj.user.calendar;
+          for(let date in dewDates) {
+            addDiv(date);
+            let arr = dewDates[date].drops;
+            for(let drop in arr) {
+              if((!obj.user.showComplete && !arr[drop].complete) || (obj.user.showComplete && arr[drop].complete)) {
+                let listName = 'd' + date;
+                addListItem(listName,arr[drop].task);
+              }
+              
+            }
+          }
     };
 
     //Parses JSON for HTML and the console
@@ -48,13 +102,7 @@
           console.log(obj.message);
         }
         else {
-          //if GET request, print the users object
-          //console.log(xhr.response);
-          clearList("to-dew-list");
-          const dewDrops = obj.user.toDew;
-          for(let drop in dewDrops) {
-            addListItem("to-dew-list", dewDrops[drop].task);
-          }
+          refreshPage(obj);
         }
       }
     };
@@ -101,14 +149,14 @@
 
       xhr.send(data);
 
-      e.preventDefault();
+      if(e) e.preventDefault();
       return false;
     };
 
-    const getUserData = (e) => {
+    const getUserData = (e, path) => {
       const xhr = new XMLHttpRequest();
       
-      xhr.open("get", '/getUser');
+      xhr.open("get", path);
 
       xhr.setRequestHeader('Accept', 'application/json');
 
@@ -134,15 +182,20 @@
       addListItem(list, task);
     };
 
+    const toggleDewDrop = (list, task) => {
+      const formData = `list=${list}&task=${task}`;
+
+      sendPost(false, "post", '/toggleDrop', formData);
+    };
+
     const addDewDate = (e, form, calendar) => {
       const dateField = dateForm.querySelector('#dateField');
-
-      const formData = `date=${dateField.value}`;
-
-      sendPost(e, "post", '/addDate', formData);
-
       const date = dateField.value;
       if(date) {
+        const formData = `date=${dateField.value}`;
+
+        sendPost(e, "post", '/addDate', formData);
+
         addDiv(date);
       }
     };
@@ -155,14 +208,25 @@
       const dropForm = document.querySelector('#dropForm');
       const dateForm = document.querySelector('#dateForm');
       const dataForm = document.querySelector('#dataForm');
+      const completeForm = document.querySelector('#completeForm');
 
       const addDropArrow = (e) => addDewDrop(e, dropForm);
       const addDateArrow = (e) => addDewDate(e, dateForm, calendar);
-      const getUser = (e) => getUserData(e);
+      const getUser = (e) => {
+        getUserData(e, "/getUser");
+        dataForm.style.display = "none";
+        completeForm.style.display = "block";
+      };
+      const getUserComplete = (e) => {
+        getUserData(e, "/getUser?filter=complete");
+        completeForm.style.display = "none";
+        dataForm.style.display = "block";
+      };
 
       dropForm.addEventListener('submit', addDropArrow);
       dateForm.addEventListener('submit', addDateArrow);
       dataForm.addEventListener('submit', getUser);
+      completeForm.addEventListener('submit', getUserComplete);
 
       getUser();
     };
@@ -177,11 +241,13 @@
 
     <div id="proto-form">
 
-      <form id="dateForm" action="" method="post">
+      <img src="logo">
+
+      <!-- <form id="dateForm" action="" method="post">
         <label for="date">date: </label>
         <input id="dateField" type="date" name="date" />
         <input type="submit" value="add dew date" />
-      </form>
+      </form> -->
 
       <form id="dropForm" action="" method="post">
         <label for="list">list: </label>
@@ -193,10 +259,15 @@
         <input type="submit" value="add dew drop" />
       </form>
 
-      <div id="content"></div>
-      <form id="dataForm">
-        <input type="submit" value="get user data" />
-      </form>
+      <div id="buttons">
+          <div id="content"></div>
+          <form id="dataForm" value="/getUser">
+            <input type="submit" value="show incomplete items" id="dataButton" />
+          </form>
+          <form id="completeForm" value="/getUser?filter=complete">
+            <input type="submit" value="show completed items" id="completeButton" />
+          </form>
+      </div>
 
     </div>
 
@@ -206,14 +277,23 @@
     <div id="left">
       <div id="to-dew">
         <h1>to-dew</h1>
-        <ul id="to-dew-list"></ul>
+        <div id="to-dew-list"></div>
       </div>
     </div>
 
     <div id="right">
-      <div class="dew-date">
-        <h1>dew dates</h1>
+
+      <div class="dew-date" id="calendar-header">
+
+        <h1 id="calendarTitle">dew dates</h1>
+
+        <form id="dateForm" action="" method="post">
+          <input id="dateField" type="date" name="date" />
+          <input type="submit" value="add" id="dateButton" />
+        </form>
+
       </div>
+      <div id="calendar"></div>
     </div>
   </div>
 
